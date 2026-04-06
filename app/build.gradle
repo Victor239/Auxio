@@ -15,6 +15,7 @@ android {
     // Auxio implicitly depends on the native modules, explicitly specify it
     // here so the libraries are still stripped.
     ndkVersion ndk_version
+    compileSdk target_sdk
     namespace "org.oxycblt.auxio"
 
     defaultConfig {

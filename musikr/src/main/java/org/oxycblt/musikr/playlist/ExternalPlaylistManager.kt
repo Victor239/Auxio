@@ -20,6 +20,7 @@ package org.oxycblt.musikr.playlist
 
 import android.content.Context
 import android.net.Uri
+import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.Playlist
 import org.oxycblt.musikr.fs.Components
 import org.oxycblt.musikr.fs.Path
@@ -27,6 +28,7 @@ import org.oxycblt.musikr.fs.Volume
 import org.oxycblt.musikr.fs.path.DocumentPathFactory
 import org.oxycblt.musikr.fs.saf.contentResolverSafe
 import org.oxycblt.musikr.playlist.m3u.M3U
+import org.oxycblt.musikr.playlist.xspf.XSPF
 
 /**
  * Generic playlist file importing abstraction.
@@ -61,6 +63,7 @@ interface ExternalPlaylistManager {
                 context,
                 DocumentPathFactory.from(context),
                 M3U.from(context),
+                XSPF.from(context),
             )
     }
 }
@@ -77,14 +80,26 @@ interface ExternalPlaylistManager {
 data class ExportConfig(val absolute: Boolean, val windowsPaths: Boolean)
 
 /**
+ * A single track entry from an imported playlist, carrying an optional UID for direct lookup and a
+ * list of possible file paths as a fallback.
+ *
+ * @property uid A [Music.UID] parsed from the playlist entry's identifier field, if present. Used
+ *   for direct song lookup before trying path matching.
+ * @property paths The possible [Path]s for this track, tried in order if [uid] lookup fails.
+ * @see ImportedPlaylist
+ */
+data class ImportedTrack(val uid: Music.UID?, val paths: PossiblePaths)
+
+/**
  * A playlist that has been imported.
  *
  * @property name The name of the playlist. May be null if not provided.
- * @property paths The paths of the files in the playlist.
+ * @property tracks The tracks in the playlist, each with optional UID and possible paths.
  * @see ExternalPlaylistManager
  * @see M3U
+ * @see XSPF
  */
-data class ImportedPlaylist(val name: String?, val paths: List<PossiblePaths>)
+data class ImportedPlaylist(val name: String?, val tracks: List<ImportedTrack>)
 
 typealias PossiblePaths = List<Path>
 
@@ -92,15 +107,26 @@ private class ExternalPlaylistManagerImpl(
     private val context: Context,
     private val documentPathFactory: DocumentPathFactory,
     private val m3u: M3U,
+    private val xspf: XSPF,
 ) : ExternalPlaylistManager {
     override suspend fun import(uri: Uri): ImportedPlaylist? {
         val filePath =
             documentPathFactory.unpackDocumentUri(uri)
                 ?: Path(Volume.ThirdParty(uri), Components.root())
 
+        val mimeType = context.contentResolverSafe.getType(uri)
+        val isXspf =
+            mimeType == XSPF.MIME_TYPE ||
+                (mimeType == null && filePath.name?.endsWith(".xspf", ignoreCase = true) == true)
+
         return try {
             context.contentResolverSafe.openInputStream(uri)?.use {
-                val imported = m3u.read(it, filePath.directory) ?: return null
+                val imported =
+                    if (isXspf) {
+                        xspf.read(it, filePath.directory)
+                    } else {
+                        m3u.read(it, filePath.directory)
+                    } ?: return null
                 val name = imported.name
                 if (name != null) {
                     return imported
@@ -113,7 +139,7 @@ private class ExternalPlaylistManagerImpl(
                 newName = newName.replace(Regex("[_-]"), " ")
                 // Replace long stretches of whitespace with one space
                 newName = newName.replace(Regex("\\s+"), " ")
-                return ImportedPlaylist(newName, imported.paths)
+                return ImportedPlaylist(newName, imported.tracks)
             }
         } catch (e: Exception) {
             null

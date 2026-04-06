@@ -31,6 +31,7 @@ import org.oxycblt.musikr.fs.Volume
 import org.oxycblt.musikr.fs.path.VolumeManager
 import org.oxycblt.musikr.playlist.ExportConfig
 import org.oxycblt.musikr.playlist.ImportedPlaylist
+import org.oxycblt.musikr.playlist.ImportedTrack
 import org.oxycblt.musikr.playlist.PossiblePaths
 import org.oxycblt.musikr.tag.Name
 import org.oxycblt.musikr.util.correctWhitespace
@@ -81,7 +82,7 @@ private class M3UImpl(private val volumeManager: VolumeManager) : M3U() {
     override fun read(stream: InputStream, workingDirectory: Path): ImportedPlaylist? {
         val volumes = volumeManager.getVolumes()
         val reader = BufferedReader(InputStreamReader(stream))
-        val paths = mutableListOf<PossiblePaths>()
+        val tracks = mutableListOf<ImportedTrack>()
         var name: String? = null
 
         consumeFile@ while (true) {
@@ -119,11 +120,11 @@ private class M3UImpl(private val volumeManager: VolumeManager) : M3U() {
             val possibilities =
                 interpretations.flatMap { expandInterpretation(it, workingDirectory, volumes) }
 
-            paths.add(possibilities)
+            tracks.add(ImportedTrack(null, possibilities))
         }
 
-        return if (paths.isNotEmpty()) {
-            ImportedPlaylist(name, paths)
+        return if (tracks.isNotEmpty()) {
+            ImportedPlaylist(name, tracks)
         } else {
             // Couldn't get anything useful out of this file.
             null

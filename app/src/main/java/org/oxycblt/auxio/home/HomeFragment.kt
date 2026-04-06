@@ -72,6 +72,7 @@ import org.oxycblt.musikr.IndexingProgress
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.Playlist
 import org.oxycblt.musikr.playlist.m3u.M3U
+import org.oxycblt.musikr.playlist.xspf.XSPF
 import timber.log.Timber as L
 
 /**
@@ -89,7 +90,7 @@ class HomeFragment :
     private val homeModel: HomeViewModel by activityViewModels()
     private val detailModel: DetailViewModel by activityViewModels()
     private var storagePermissionLauncher: ActivityResultLauncher<String>? = null
-    private var getContentLauncher: ActivityResultLauncher<String>? = null
+    private var getContentLauncher: ActivityResultLauncher<Array<String>>? = null
     private var pendingImportTarget: Playlist? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,7 +117,7 @@ class HomeFragment :
             }
 
         getContentLauncher =
-            registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                 if (uri == null) {
                     L.w("No URI returned from file picker")
                     return@registerForActivityResult
@@ -367,7 +368,7 @@ class HomeFragment :
                     requireNotNull(getContentLauncher) {
                             "Content picker launcher was not available"
                         }
-                        .launch(M3U.MIME_TYPE)
+                        .launch(arrayOf(M3U.MIME_TYPE, XSPF.MIME_TYPE))
                     musicModel.playlistDecision.consume()
                     return
                 }

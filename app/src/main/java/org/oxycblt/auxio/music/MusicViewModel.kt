@@ -174,8 +174,9 @@ constructor(
 
                 val library = musicRepository.library ?: return@launch
                 val songs =
-                    importedPlaylist.paths.mapNotNull {
-                        it.firstNotNullOfOrNull(library::findSongByPath)
+                    importedPlaylist.tracks.mapNotNull { track ->
+                        track.uid?.let { library.findSong(it) }
+                            ?: track.paths.firstNotNullOfOrNull(library::findSongByPath)
                     }
 
                 if (songs.isEmpty()) {
