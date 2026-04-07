@@ -20,6 +20,11 @@
         android:title="@string/lbl_song_detail"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_rate"
+        android:icon="@drawable/ic_details_24"
+        android:title="@string/lbl_add_rating"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_share"
         android:icon="@drawable/ic_share_24"
         android:title="@string/lbl_share" />

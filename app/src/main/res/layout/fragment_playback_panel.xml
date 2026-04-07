@@ -61,6 +61,16 @@
             android:layout_height="wrap_content"
             tools:text="Artist Name" />
 
+        <RatingBar
+            android:id="@+id/playback_rating"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:isIndicator="true"
+            android:numStars="5"
+            android:stepSize="0.5"
+            android:visibility="gone" />
+
     </LinearLayout>
     <org.oxycblt.auxio.playback.ui.ForcedLTRFrameLayout
         android:id="@+id/playback_controls_wrapper"

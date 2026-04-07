@@ -25,6 +25,8 @@ import android.media.audiofx.AudioEffect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
 import android.view.ViewTreeObserver
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,17 +35,20 @@ import androidx.core.view.updatePadding
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.roundToInt
 import org.oxycblt.auxio.R
 import org.oxycblt.auxio.databinding.FragmentPlaybackPanelBinding
 import org.oxycblt.auxio.detail.DetailViewModel
 import org.oxycblt.auxio.list.ListViewModel
 import org.oxycblt.auxio.music.resolve
 import org.oxycblt.auxio.music.resolveNames
+import org.oxycblt.auxio.playback.rating.RatingViewModel
 import org.oxycblt.auxio.playback.state.RepeatMode
 import org.oxycblt.auxio.playback.ui.StyledSeekBar
 import org.oxycblt.auxio.playback.ui.stepper.DisplayPortion
 import org.oxycblt.auxio.playback.ui.stepper.PlayerFastSeekOverlay
 import org.oxycblt.auxio.ui.ViewBindingFragment
+import org.oxycblt.auxio.util.collect
 import org.oxycblt.auxio.util.collectImmediately
 import org.oxycblt.auxio.util.showToast
 import org.oxycblt.auxio.util.systemBarInsetsCompat
@@ -69,6 +74,7 @@ class PlaybackPanelFragment :
     private val playbackModel: PlaybackViewModel by activityViewModels()
     private val detailModel: DetailViewModel by activityViewModels()
     private val listModel: ListViewModel by activityViewModels()
+    private val ratingModel: RatingViewModel by activityViewModels()
     private var equalizerLauncher: ActivityResultLauncher<Intent>? = null
     private var lastCoverWidth = 0
 
@@ -152,6 +158,7 @@ class PlaybackPanelFragment :
         collectImmediately(playbackModel.repeatMode, ::updateRepeat)
         collectImmediately(playbackModel.isPlaying, ::updatePlaying)
         collectImmediately(playbackModel.isShuffled, ::updateShuffled)
+        collect(ratingModel.ratingFor(playbackModel.song), ::updateRating)
     }
 
     override fun onStart() {
@@ -265,6 +272,27 @@ class PlaybackPanelFragment :
 
     private fun updateShuffled(isShuffled: Boolean) {
         requireBinding().playbackShuffle.isChecked = isShuffled
+    }
+
+    private fun updateRating(ratingByte: Int?) {
+        val ratingBar = requireBinding().playbackRating
+        if (ratingByte != null) {
+            val halfStars = ((ratingByte / 255f * 10f).roundToInt() / 2f).coerceIn(0.5f, 5.0f)
+            ratingBar.rating = halfStars
+            ratingBar.visibility = View.VISIBLE
+            // isIndicator=true causes onTouchEvent to return false, so OnClickListener never fires.
+            // Use OnTouchListener on ACTION_UP instead.
+            ratingBar.setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    playbackModel.song.value?.let { ratingModel.openRatingPicker(it) }
+                    ratingBar.performClick()
+                }
+                true
+            }
+        } else {
+            ratingBar.visibility = View.GONE
+            ratingBar.setOnTouchListener(null)
+        }
     }
 
     private fun navigateToCurrentSong() {

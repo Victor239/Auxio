@@ -126,6 +126,7 @@ class PlaylistDetailFragment :
             ::updatePlayback,
         )
         collect(playbackModel.playbackDecision.flow, ::handlePlaybackDecision)
+        collect(ratingModel.showPicker, ::handleRatingPicker)
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -430,6 +431,12 @@ class PlaylistDetailFragment :
                 }
             }
         findNavController().navigateSafe(directions)
+    }
+
+    private fun handleRatingPicker(song: Song?) {
+        if (song == null) return
+        findNavController().navigateSafe(PlaylistDetailFragmentDirections.openSongRating(song.uid))
+        ratingModel.dismissPicker()
     }
 
     private fun updateMultiToolbar() {

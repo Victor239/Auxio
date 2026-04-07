@@ -49,6 +49,7 @@ import org.oxycblt.auxio.music.PlaylistDecision
 import org.oxycblt.auxio.music.PlaylistMessage
 import org.oxycblt.auxio.playback.PlaybackDecision
 import org.oxycblt.auxio.playback.PlaybackViewModel
+import org.oxycblt.auxio.playback.rating.RatingViewModel
 import org.oxycblt.auxio.util.collect
 import org.oxycblt.auxio.util.collectImmediately
 import org.oxycblt.auxio.util.context
@@ -81,6 +82,7 @@ class SearchFragment : ListFragment<Music, FragmentSearchBinding>() {
     override val listModel: ListViewModel by activityViewModels()
     override val playbackModel: PlaybackViewModel by activityViewModels()
     override val musicModel: MusicViewModel by activityViewModels()
+    private val ratingModel: RatingViewModel by activityViewModels()
     private val searchAdapter = SearchAdapter(this)
     private var getContentLauncher: ActivityResultLauncher<String>? = null
     private var pendingImportTarget: Playlist? = null
@@ -171,6 +173,7 @@ class SearchFragment : ListFragment<Music, FragmentSearchBinding>() {
         )
         collect(playbackModel.playbackDecision.flow, ::handlePlaybackDecision)
         collect(detailModel.toShow.flow, ::handleShow)
+        collect(ratingModel.showPicker, ::handleRatingPicker)
     }
 
     override fun onDestroyBinding(binding: FragmentSearchBinding) {
@@ -275,6 +278,12 @@ class SearchFragment : ListFragment<Music, FragmentSearchBinding>() {
 
         // Keyboard is no longer needed.
         hideKeyboard()
+    }
+
+    private fun handleRatingPicker(song: Song?) {
+        if (song == null) return
+        findNavController().navigateSafe(SearchFragmentDirections.openSongRating(song.uid))
+        ratingModel.dismissPicker()
     }
 
     private fun handleMenu(menu: Menu?) {

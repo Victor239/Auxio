@@ -19,6 +19,7 @@
 package org.oxycblt.musikr.tag.parse
 
 import androidx.core.text.isDigitsOnly
+import kotlin.math.roundToInt
 import org.oxycblt.musikr.metadata.Metadata
 import org.oxycblt.musikr.tag.Date
 import org.oxycblt.musikr.tag.format.parseSlashPositionField
@@ -285,6 +286,45 @@ private fun List<String>.parseReplayGainAdjustment() =
  * https://github.com/vanilla-music/vanilla
  */
 private val REPLAYGAIN_ADJUSTMENT_FILTER_REGEX by lazy { Regex("[^\\d.-]") }
+
+internal fun Metadata.rawPopmRating(): Int? {
+    // ID3v2: prefer TXXX:FMPS_RATING (exact 0.0–1.0 float, written by Strawberry et al.)
+    // over POPM (coarse 6-bucket mapping that loses half-star precision on round-trip).
+    id3v2["TXXX:FMPS_RATING"]
+        ?.firstOrNull()
+        ?.toFloatOrNull()
+        ?.takeIf { it > 0f && it <= 1f }
+        ?.let {
+            return (it * 255).roundToInt().coerceIn(1, 255)
+        }
+    // ID3v2 POPM: stored as "POPM:{EMAIL}" → ["ratingByte"] (email uppercased by NativeTagMap)
+    val popmEntry = id3v2.entries.firstOrNull { it.key.startsWith("POPM:") }
+    popmEntry
+        ?.value
+        ?.firstOrNull()
+        ?.toIntOrNull()
+        ?.takeIf { it > 0 }
+        ?.let {
+            return it
+        }
+    // Xiph FMPS_RATING (float 0.0–1.0)
+    (xiph["FMPS_RATING"] ?: xiph["FMPS RATING"])
+        ?.firstOrNull()
+        ?.toFloatOrNull()
+        ?.takeIf { it > 0f }
+        ?.let {
+            return (it * 255).toInt().coerceIn(1, 255)
+        }
+    // MP4 FMPS_Rating
+    (mp4["----:COM.APPLE.ITUNES:FMPS_RATING"] ?: mp4["----:COM.APPLE.ITUNES:FMPS RATING"])
+        ?.firstOrNull()
+        ?.toFloatOrNull()
+        ?.takeIf { it > 0f }
+        ?.let {
+            return (it * 255).toInt().coerceIn(1, 255)
+        }
+    return null
+}
 
 private fun Metadata.parseId3v23Date(): Date? {
     // Assume that TDAT/TIME can refer to TYER or TORY depending on if TORY

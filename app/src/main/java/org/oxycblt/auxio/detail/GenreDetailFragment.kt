@@ -82,6 +82,7 @@ class GenreDetailFragment : DetailFragment<Genre, Music>() {
             ::updatePlayback,
         )
         collect(playbackModel.playbackDecision.flow, ::handlePlaybackDecision)
+        collect(ratingModel.showPicker, ::handleRatingPicker)
     }
 
     override fun onDestroyBinding(binding: FragmentDetailBinding) {
@@ -291,5 +292,11 @@ class GenreDetailFragment : DetailFragment<Genre, Music>() {
                 is PlaybackDecision.PlayFromGenre -> error("Unexpected playback decision $decision")
             }
         findNavController().navigateSafe(directions)
+    }
+
+    private fun handleRatingPicker(song: Song?) {
+        if (song == null) return
+        findNavController().navigateSafe(GenreDetailFragmentDirections.openSongRating(song.uid))
+        ratingModel.dismissPicker()
     }
 }

@@ -45,6 +45,7 @@ set_target_properties(
 add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         taglib_jni.cpp
+        taglib_write_jni.cpp
         JInputStream.cpp
         JTagMap.cpp
         JMetadataBuilder.cpp

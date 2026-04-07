@@ -55,6 +55,7 @@ internal data class PreSong(
     val preAlbum: PreAlbum,
     val preArtists: List<PreArtist>,
     val preGenres: List<PreGenre>,
+    val rawPopmRating: Int?,
 )
 
 internal data class PreAlbum(

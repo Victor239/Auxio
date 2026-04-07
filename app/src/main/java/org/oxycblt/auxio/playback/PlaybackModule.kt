@@ -20,18 +20,24 @@ package org.oxycblt.auxio.playback
 
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.oxycblt.auxio.playback.state.PlaybackStateManager
 import org.oxycblt.auxio.playback.state.PlaybackStateManagerImpl
+import org.oxycblt.musikr.TagWriter
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface PlaybackModule {
-    @Singleton
+abstract class PlaybackModule {
     @Binds
-    fun stateManager(playbackManager: PlaybackStateManagerImpl): PlaybackStateManager
+    @Singleton
+    abstract fun stateManager(playbackManager: PlaybackStateManagerImpl): PlaybackStateManager
 
-    @Binds fun settings(playbackSettings: PlaybackSettingsImpl): PlaybackSettings
+    @Binds abstract fun settings(playbackSettings: PlaybackSettingsImpl): PlaybackSettings
+
+    companion object {
+        @Provides fun tagWriter(): TagWriter = TagWriter()
+    }
 }

@@ -18,6 +18,7 @@
  
 package org.oxycblt.musikr.metadata
 
+import android.os.ParcelFileDescriptor
 import java.io.FileInputStream
 import org.oxycblt.musikr.fs.File
 
@@ -39,4 +40,14 @@ internal object TagLibJNI {
     }
 
     private external fun openNative(inputStream: NativeInputStream): MetadataResult
+
+    fun writeRating(pfd: ParcelFileDescriptor, mimeType: String, ratingByte: Int): Boolean =
+        writeRatingNative(pfd.fd, mimeType, ratingByte, "no@email")
+
+    private external fun writeRatingNative(
+        fd: Int,
+        mimeType: String,
+        ratingByte: Int,
+        email: String,
+    ): Boolean
 }

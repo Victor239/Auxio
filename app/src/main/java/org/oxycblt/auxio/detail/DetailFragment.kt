@@ -39,6 +39,7 @@ import org.oxycblt.auxio.list.PlainDivider
 import org.oxycblt.auxio.list.PlainHeader
 import org.oxycblt.auxio.music.MusicViewModel
 import org.oxycblt.auxio.playback.PlaybackViewModel
+import org.oxycblt.auxio.playback.rating.RatingViewModel
 import org.oxycblt.auxio.util.getDimenPixels
 import org.oxycblt.auxio.util.setFullWidthLookup
 import org.oxycblt.musikr.Music
@@ -52,6 +53,7 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
     override val listModel: ListViewModel by activityViewModels()
     override val musicModel: MusicViewModel by activityViewModels()
     override val playbackModel: PlaybackViewModel by activityViewModels()
+    protected val ratingModel: RatingViewModel by activityViewModels()
 
     private var spacingSmall = 0
 
