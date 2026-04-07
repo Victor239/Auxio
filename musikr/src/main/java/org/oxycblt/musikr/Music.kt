@@ -322,6 +322,11 @@ interface Song : Music {
      * [Genre] name was specified in the metadata.
      */
     val genres: List<Genre>
+    /**
+     * The raw POPM rating byte (1–255) read from the file's tag, or null if no rating tag was
+     * present. Use this to display and compare ratings; write via TagWriter.
+     */
+    val rawPopmRating: Int?
 }
 
 /**

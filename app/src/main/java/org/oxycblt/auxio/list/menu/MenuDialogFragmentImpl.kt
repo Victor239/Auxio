@@ -32,6 +32,7 @@ import org.oxycblt.auxio.music.resolve
 import org.oxycblt.auxio.music.resolveNames
 import org.oxycblt.auxio.playback.PlaybackViewModel
 import org.oxycblt.auxio.playback.formatDurationMs
+import org.oxycblt.auxio.playback.rating.RatingViewModel
 import org.oxycblt.auxio.util.getPlural
 import org.oxycblt.auxio.util.share
 import org.oxycblt.auxio.util.showToast
@@ -52,6 +53,7 @@ class SongMenuDialogFragment : MenuDialogFragment<Menu.ForSong>() {
     private val detailModel: DetailViewModel by activityViewModels()
     private val musicModel: MusicViewModel by activityViewModels()
     private val playbackModel: PlaybackViewModel by activityViewModels()
+    private val ratingModel: RatingViewModel by activityViewModels()
     private val args: SongMenuDialogFragmentArgs by navArgs()
 
     override val parcel
@@ -85,6 +87,7 @@ class SongMenuDialogFragment : MenuDialogFragment<Menu.ForSong>() {
             R.id.action_album_details -> detailModel.showAlbum(menu.song.album)
             R.id.action_share -> requireContext().share(menu.song)
             R.id.action_detail -> detailModel.showSong(menu.song)
+            R.id.action_rate -> ratingModel.openRatingPicker(menu.song)
             else -> error("Unexpected menu item selected $item")
         }
     }

@@ -63,6 +63,7 @@ internal class SongImpl(private val handle: SongCore) : Song {
     override val modifiedMs = preSong.modifiedMs
     override val addedMs = preSong.addedMs
     override val cover = preSong.cover
+    override val rawPopmRating = preSong.rawPopmRating
     override val album: Album
         get() = handle.resolveAlbum()
 

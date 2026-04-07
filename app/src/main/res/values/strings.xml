@@ -132,6 +132,8 @@
     <string name="lbl_album_details">Go to album</string>
     <string name="lbl_song_detail">View properties</string>
     <string name="lbl_parent_detail">View</string>
+    <string name="lbl_add_rating">Add rating</string>
+    <string name="lbl_remove_rating">Remove rating</string>
     <string name="lbl_share">Share</string>
 
     <string name="lbl_props">Song properties</string>

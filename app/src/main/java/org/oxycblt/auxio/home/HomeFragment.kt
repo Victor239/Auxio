@@ -63,6 +63,7 @@ import org.oxycblt.auxio.music.PlaylistDecision
 import org.oxycblt.auxio.music.PlaylistMessage
 import org.oxycblt.auxio.playback.PlaybackDecision
 import org.oxycblt.auxio.playback.PlaybackViewModel
+import org.oxycblt.auxio.playback.rating.RatingViewModel
 import org.oxycblt.auxio.util.collect
 import org.oxycblt.auxio.util.collectImmediately
 import org.oxycblt.auxio.util.lazyReflectedField
@@ -71,6 +72,7 @@ import org.oxycblt.auxio.util.showToast
 import org.oxycblt.musikr.IndexingProgress
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.Playlist
+import org.oxycblt.musikr.Song
 import org.oxycblt.musikr.playlist.m3u.M3U
 import timber.log.Timber as L
 
@@ -88,6 +90,7 @@ class HomeFragment :
     override val playbackModel: PlaybackViewModel by activityViewModels()
     private val homeModel: HomeViewModel by activityViewModels()
     private val detailModel: DetailViewModel by activityViewModels()
+    private val ratingModel: RatingViewModel by activityViewModels()
     private var storagePermissionLauncher: ActivityResultLauncher<String>? = null
     private var getContentLauncher: ActivityResultLauncher<String>? = null
     private var pendingImportTarget: Playlist? = null
@@ -182,6 +185,7 @@ class HomeFragment :
         collect(musicModel.playlistDecision.flow, ::handlePlaylistDecision)
         collectImmediately(musicModel.playlistMessage.flow, ::handlePlaylistMessage)
         collect(playbackModel.playbackDecision.flow, ::handlePlaybackDecision)
+        collect(ratingModel.showPicker, ::handleRatingPicker)
     }
 
     override fun onDestroyBinding(binding: FragmentHomeBinding) {
@@ -458,6 +462,12 @@ class HomeFragment :
             }
             null -> {}
         }
+    }
+
+    private fun handleRatingPicker(song: Song?) {
+        if (song == null) return
+        findNavController().navigateSafe(HomeFragmentDirections.openSongRating(song.uid))
+        ratingModel.dismissPicker()
     }
 
     private fun handleMenu(menu: Menu?) {

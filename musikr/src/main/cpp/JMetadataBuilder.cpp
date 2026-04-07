@@ -23,6 +23,7 @@
 #include <taglib/mp4tag.h>
 #include <taglib/textidentificationframe.h>
 #include <taglib/attachedpictureframe.h>
+#include <taglib/popularimeterframe.h>
 
 #include <taglib/tpropertymap.h>
 
@@ -80,6 +81,14 @@ void JMetadataBuilder::setId3v2(TagLib::ID3v2::Tag &tag) {
                     && pictureFrame->type()
                             == TagLib::ID3v2::AttachedPictureFrame::FrontCover) {
                 frontCoverPic = pictureFrame;
+            }
+        } else if (auto popmFrame =
+                dynamic_cast<TagLib::ID3v2::PopularimeterFrame*>(frame)) {
+            int rating = popmFrame->rating();
+            if (rating > 0) {
+                TagLib::String ratingStr = TagLib::String(
+                        std::to_string(rating));
+                id3v2.add_combined("POPM", popmFrame->email(), ratingStr);
             }
         } else {
             continue;

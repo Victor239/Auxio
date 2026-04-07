@@ -84,6 +84,7 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
             ::updatePlayback,
         )
         collect(playbackModel.playbackDecision.flow, ::handlePlaybackDecision)
+        collect(ratingModel.showPicker, ::handleRatingPicker)
     }
 
     override fun onDestroyBinding(binding: FragmentDetailBinding) {
@@ -302,6 +303,12 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
                 }
             }
         findNavController().navigateSafe(directions)
+    }
+
+    private fun handleRatingPicker(song: Song?) {
+        if (song == null) return
+        findNavController().navigateSafe(AlbumDetailFragmentDirections.openSongRating(song.uid))
+        ratingModel.dismissPicker()
     }
 
     private fun scrollToAlbumSong(song: Song) {
